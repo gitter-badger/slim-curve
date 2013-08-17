@@ -152,7 +152,7 @@ public class FitTest {
 		double[] a = getInitA1();
 		double[] tau = getInitTau1();
 		double[] z = getInitZ1();
-		
+/*		
 		int returnCode = slimCurve.fitRLD(
 				xInc,
 				trans,
@@ -172,5 +172,6 @@ public class FitTest {
 		System.out.println("return code is " + returnCode);
 		System.out.println("A " + a[0] + " T " + tau[0] + " Z " + z[0]);
 		System.out.println("chisquare " + chiSquare[0] / chiSquareAdjust);
+*/
 	}
 }
