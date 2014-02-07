@@ -29,8 +29,8 @@
 
   <dependencies>
     <dependency>
-      <artifactId>slim-curve-java</artifactId>
       <groupId>loci</groupId>
+      <artifactId>slim-curve-java</artifactId>
       <version>1.0.0-SNAPSHOT</version>
       <exclusions>
         <exclusion>
