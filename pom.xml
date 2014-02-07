@@ -13,7 +13,6 @@
 
   <artifactId>slim-curve-java-test</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
 
   <name>SLIM-Curve Java Test</name>
   <description>Test SLIM Curve Java layer library.</description>
