@@ -6,9 +6,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>loci</groupId>
-		<artifactId>pom-loci</artifactId>
-		<version>1.15</version>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>1.149</version>
 		<relativePath />
 	</parent>
 
@@ -17,6 +17,7 @@
 
 	<name>SLIM-Curve Java Test</name>
 	<description>Test SLIM Curve Java layer library.</description>
+	<url>https://slim-curve.github.io/</url>
 	<inceptionYear>2013</inceptionYear>
 
 	<licenses>
@@ -26,6 +27,11 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+
+	<organization>
+		<name>SLIM Curve</name>
+		<url>https://github.com/slim-curve/</url>
+	</organization>
 
 	<dependencies>
 		<dependency>
@@ -69,7 +75,6 @@
 		<developer>
 			<id>aivar</id>
 			<name>Aivar Grislis</name>
-			<email>grislis@wisc.edu</email>
 			<url>http://loci.wisc.edu/people/aivar-grislis</url>
 			<organization>UW-Madison LOCI</organization>
 			<organizationUrl>http://loci.wisc.edu/</organizationUrl>
@@ -79,7 +84,39 @@
 			</roles>
 			<timezone>-6</timezone>
 		</developer>
+		<developer>
+			<id>ctrueden</id>
+			<name>Curtis Rueden</name>
+			<email>ctrueden@wisc.edu</email>
+			<url>http://loci.wisc.edu/people/curtis-rueden</url>
+			<organization>UW-Madison LOCI</organization>
+			<organizationUrl>http://loci.wisc.edu/</organizationUrl>
+			<roles>
+				<role>maintainer</role>
+			</roles>
+			<timezone>-6</timezone>
+		</developer>
 	</developers>
+
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/slim-curve/slim-curve-java-test/issues</url>
+	</issueManagement>
+
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://jenkins.imagej.net/job/SLIM-curve-java-test/</url>
+	</ciManagement>
+
+	<mailingLists>
+		<mailingList>
+			<name>SLIM Curve</name>
+			<subscribe>http://loci.wisc.edu/mailman/listinfo/slim-curve</subscribe>
+			<unsubscribe>http://loci.wisc.edu/mailman/listinfo/slim-curve</unsubscribe>
+			<post>slim-curve@loci.wisc.edu</post>
+			<archive>http://loci.wisc.edu/pipermail/slim-curve/</archive>
+		</mailingList>
+	</mailingLists>
 
 	<scm>
 		<connection>scm:git:git://github.com/uw-loci/slim-curve-java-test</connection>
