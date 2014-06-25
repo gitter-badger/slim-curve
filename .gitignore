@@ -1,7 +1,7 @@
 .classpath
 .project
 .settings
-target
 build
-src/matlab/*.mex*
 src/main/c/doxygen.exe
+src/matlab/*.mex*
+target

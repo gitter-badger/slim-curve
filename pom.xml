@@ -41,6 +41,13 @@
 			<artifactId>native-lib-loader</artifactId>
 			<version>2.0.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -147,6 +154,7 @@ University of Wisconsin-Madison.</organizationName>
 			<organization>UW-Madison LOCI</organization>
 			<organizationUrl>http://loci.wisc.edu/</organizationUrl>
 			<roles>
+				<role>architect</role>
 				<role>developer</role>
 			</roles>
 			<timezone>-6</timezone>
@@ -160,6 +168,7 @@ University of Wisconsin-Madison.</organizationName>
 			<organizationUrl>http://loci.wisc.edu/</organizationUrl>
 			<roles>
 				<role>architect</role>
+				<role>maintainer</role>
 			</roles>
 			<timezone>-6</timezone>
 		</developer>
