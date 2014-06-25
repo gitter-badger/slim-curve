@@ -46,9 +46,10 @@ the SLIM Curve code. This invokes the C code using JNI, with
 
 * `src` - source files
 * `src/main/c` - The source files for the SLIM Curve library
+* `src/test` - Automated unit tests
+* `src/matlab` - For calling SLIM Curve from MATLAB
 * `src/slim-curve-cmd/c` - The source files for the standalone executable
   wrapper for the library
-* `src/slim-curve-cmd/c/doc` - API documentaion
 * `test_files` - dat and ini settings file for testing
 
 ## Building the source
