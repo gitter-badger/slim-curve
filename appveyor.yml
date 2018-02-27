@@ -1,0 +1,36 @@
+version: 1.0.{build}
+
+clone_folder: c:\projects\slim-curve
+
+environment:
+  matrix:
+    - GENERATOR: "Visual Studio 12 2013 Win64"
+      CONFIG: Release
+
+    - GENERATOR: "Visual Studio 14 2015 Win64"
+      CONFIG: Release
+
+    - GENERATOR: "Visual Studio 15 2017 Win64"
+      CONFIG: Release
+
+matrix:
+  fast_finish: true
+
+#    - GENERATOR: "MinGW Makefiles"
+#      CONFIG: Release
+
+before_build:
+  - mkdir build
+  - cd build
+  - cmake .. -G "%GENERATOR%"
+
+build:
+  project: c:\projects\slim-curve\build\slim-curve.sln
+  verbosity: minimal
+  parallel: true
+
+test_script:
+  - cd c:\projects\slim-curve
+  - python --version
+  - pip install --user cram
+  - python -m cram ../tests
