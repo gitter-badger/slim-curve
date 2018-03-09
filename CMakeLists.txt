@@ -6,6 +6,10 @@ cmake_minimum_required(VERSION 2.6)
 
 project(slim-curve)
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 include_directories("src/main/c" "src/main/cpp" "src/slim-curve-cmd/c/iniparser/src" "src/test/c")
 
 # Common files we always need
@@ -68,3 +72,41 @@ if(UNIX)
   target_link_libraries(slim-curve-cmd m)
   target_link_libraries(slim-curve-test m)
 endif(UNIX)
+
+# Build a java lib with swig
+#set(SWIG_DIR "../swigwin")
+#set(SWIG_EXECUTABLE "../swigwin/swig")
+set(CMAKE_SWIG_FLAGS -package loci.slim)
+
+find_package(SWIG REQUIRED)
+find_package(Java REQUIRED)
+find_package(JNI REQUIRED)
+include(UseJava)
+include(UseSWIG)
+include_directories(${JNI_INCLUDE_DIRS})
+
+set( CMAKE_SWIG_OUTDIR ${CMAKE_BINARY_DIR}/loci/slim )
+
+# Build the C code into a dynamic library: slim-curve-java.dll (on Windows) or libexample.so (on Linux)
+set_property(SOURCE src/main/swig/SLIMCurve.i PROPERTY CPLUSPLUS ON)
+swig_add_library(
+    slim-curve-java 
+    TYPE SHARED
+    LANGUAGE java 
+    SOURCES 
+    	src/main/swig/SLIMCurve.i
+    	src/main/c/2DMatrixJProxy.cpp
+)
+swig_link_libraries(
+	slim-curve-java
+	slim-curve
+)
+
+# Build the Java code into slim-curve.jar
+add_jar(
+    slim-curve-jar
+    SOURCES
+    ${CMAKE_SWIG_OUTDIR}/SLIMCurve.java
+    ${CMAKE_SWIG_OUTDIR}/SLIMCurveJNI.java
+)
+add_dependencies( slim-curve-jar slim-curve-java )
