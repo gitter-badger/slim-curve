@@ -73,10 +73,8 @@ if(UNIX)
   target_link_libraries(slim-curve-test m)
 endif(UNIX)
 
-# Build a java lib with swig
-#set(SWIG_DIR "../swigwin")
-#set(SWIG_EXECUTABLE "../swigwin/swig")
-set(CMAKE_SWIG_FLAGS -package loci.slim)
+# Setup swig to build a java lib
+set(CMAKE_SWIG_FLAGS -package slim)
 
 find_package(SWIG REQUIRED)
 find_package(Java REQUIRED)
@@ -85,9 +83,9 @@ include(UseJava)
 include(UseSWIG)
 include_directories(${JNI_INCLUDE_DIRS})
 
-set( CMAKE_SWIG_OUTDIR ${CMAKE_BINARY_DIR}/loci/slim )
+set( CMAKE_SWIG_OUTDIR ${CMAKE_BINARY_DIR}/slim )
 
-# Build the C code into a dynamic library: slim-curve-java.dll (on Windows) or libexample.so (on Linux)
+# Build the C code into a dynamic library
 set_property(SOURCE src/main/swig/SLIMCurve.i PROPERTY CPLUSPLUS ON)
 swig_add_library(
     slim-curve-java 
@@ -95,7 +93,6 @@ swig_add_library(
     LANGUAGE java 
     SOURCES 
     	src/main/swig/SLIMCurve.i
-    	src/main/c/2DMatrixJProxy.cpp
 )
 swig_link_libraries(
 	slim-curve-java
