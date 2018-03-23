@@ -60,11 +60,15 @@ MATMAP(I2D_in, int, Int, I, Int2DMatrix)
 
 %pragma(java) jniclasscode=%{
     static {
+        
         try {
             System.loadLibrary("slim-curve");
             System.loadLibrary("slim-curve-java");
-        } catch (UnsatisfiedLinkError e) {
-            System.err.println("Native library failed to load. Exiting.\n" + e);
+            //NativeLoader.loadLibrary("slim-curve");
+            //NativeLoader.loadLibrary("slim-curve-java");
+        } catch (Exception e) {
+            //System.err.println("Native library failed to load. Exiting.\n" + e);
+            System.err.println("Cannot extract native library. Exiting.\n" + e);
             System.exit(1);
         }
     }

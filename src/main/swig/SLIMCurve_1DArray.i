@@ -14,13 +14,14 @@
     // cannot use macro inside " "
 %typemap(jni) mapName "JXXXARRAY(jType)"
 %typemap(in) mapName (j##jType *jarr) {
+	
     // $input: jType[](J)
-    // $1: jType *INTARR, $2: int ARRLEN(C)
+    // $1: jType *ARR_INPUT, $2: int ARRLEN(C)
     if (!SWIG_JavaArrayIn##JType##(jenv, &jarr, (jType **)&$1, $input)) return 0;
     $2 = (int) JCALL1(GetArrayLength, jenv, $input);
 }
 %typemap(freearg) mapName {
     // release the resources before exiting
-    JCALL3(Release##JType##ArrayElements, jenv, $input, jarr$argnum, IO);
+    delete[] $1;
 }
 %enddef

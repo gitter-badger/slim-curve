@@ -83,7 +83,7 @@ include(UseJava)
 include(UseSWIG)
 include_directories(${JNI_INCLUDE_DIRS})
 
-set( CMAKE_SWIG_OUTDIR ${CMAKE_BINARY_DIR}/slim )
+set( CMAKE_SWIG_OUTDIR ${PROJECT_SOURCE_DIR}/src/main/java/slim )
 
 # Build the C code into a dynamic library
 set_property(SOURCE src/main/swig/SLIMCurve.i PROPERTY CPLUSPLUS ON)
@@ -98,12 +98,3 @@ swig_link_libraries(
 	slim-curve-java
 	slim-curve
 )
-
-# Build the Java code into slim-curve.jar
-add_jar(
-    slim-curve-jar
-    SOURCES
-    ${CMAKE_SWIG_OUTDIR}/SLIMCurve.java
-    ${CMAKE_SWIG_OUTDIR}/SLIMCurveJNI.java
-)
-add_dependencies( slim-curve-jar slim-curve-java )

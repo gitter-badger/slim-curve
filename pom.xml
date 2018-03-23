@@ -13,9 +13,9 @@
 	</parent>
 
 	<groupId>slim-curve</groupId>
-	<artifactId>slim-curve</artifactId>
+	<artifactId>slim-curve-jar</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
-	<packaging>nar</packaging>
+	<packaging>jar</packaging>
 
 	<name>SLIM Curve</name>
 	<description>A package for exponential curve fitting of combined spectral lifetime image data.</description>
@@ -57,6 +57,10 @@
 			<name>Aivar Grislis</name>
 			<properties><id>grislis</id></properties>
 		</contributor>
+		<contributor>
+			<name>Dasong Gao</name>
+			<properties><id>Xanthorapedia</id></properties>
+		</contributor>
 	</contributors>
 
 	<mailingLists>
@@ -85,14 +89,14 @@
 	</ciManagement>
 
 	<properties>
-		<package-name>loci.slim</package-name>
+		<package-name>slim</package-name>
 
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.projectName>SLIM-curve package for exponential curve fitting of spectral lifetime data.</license.projectName>
 		<license.copyrightOwners>University of Oxford and Board of Regents of the
 University of Wisconsin-Madison.</license.copyrightOwners>
 
-		<nar-maven-plugin.version>3.3.0</nar-maven-plugin.version>
+		<skipTests>true</skipTests>
 	</properties>
 
 	<repositories>
@@ -107,6 +111,7 @@ University of Wisconsin-Madison.</license.copyrightOwners>
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>native-lib-loader</artifactId>
+			<version>2.2.0</version>
 		</dependency>
 
 		<dependency>
@@ -177,75 +182,6 @@ University of Wisconsin-Madison.</license.copyrightOwners>
 
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.4.0</version>
-				<executions>
-					<execution>
-						<id>my-execution</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<executable>src/main/swig/makeSwig.sh</executable>
-				</configuration>
-			</plugin>
-			
-			<plugin>
-				<groupId>com.github.maven-nar</groupId>
-				<artifactId>nar-maven-plugin</artifactId>
-				<extensions>true</extensions>
-				<configuration>
-					<c>
-						<options>
-							<option>-I${JAVA_HOME}/include</option>
-							<option>${java.os.include}</option>
-							<option>${stack.protector.option}</option>
-							<option>${architecture.option}</option>
-							<option>${subsystem.option}</option>
-							<option>${debug.option}</option>
-						</options>
-					</c>
-					<linker>
-						<options>
-							<option>${architecture.option}</option>
-							<option>${subsystem.option}</option>
-						</options>
-					</linker>
-					<libraries>
-						<library>
-							<type>shared</type>
-							<narSystemPackage>${package-name}</narSystemPackage>
-						</library>
-					</libraries>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<configuration>
-					<licenseName>gpl_v3</licenseName>
-					<projectName>SLIM-curve package for exponential curve fitting of spectral lifetime data.</projectName>
-					<organizationName>University of Oxford and Board of Regents of the
-University of Wisconsin-Madison.</organizationName>
-					<!--
-					NB: It seems these excludes are not respected.
-					Probably something wrong with the syntax. For now,
-					they are here merely for documentation purposes.
-					-->	
-					<excludes>
-						<exclude>src/main/c/jni.h</exclude>
-						<exclude>src/main/c/jni_md.h</exclude>
-						<exclude>src/main/c/loci_*.h</exclude>
-						<exclude>src/matlab/**</exclude>
-						<exclude>src/slim-curve-cmd/c/iniparser/**</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
 					<appendAssemblyId>false</appendAssemblyId>
@@ -255,6 +191,7 @@ University of Wisconsin-Madison.</organizationName>
 					<archive>
 						<manifest>
 							<packageName>${package-name}</packageName>
+							<mainClass>${package-name}.SLIMCurve</mainClass>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 					</archive>
