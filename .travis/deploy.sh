@@ -13,7 +13,7 @@ else
 	classifier="macosx"
 fi
 
-executablePath="target/slim-curve-jar-1.0.0-SNAPSHOT.jar"
+executablePath="target/slim-curve-1.0.0-SNAPSHOT.jar"
 
 # if [ "$TRAVIS_SECURE_ENV_VARS" = true \
 # 	-a "$TRAVIS_PULL_REQUEST" = false \
