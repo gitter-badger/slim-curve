@@ -83,7 +83,7 @@ include(UseJava)
 include(UseSWIG)
 include_directories(${JNI_INCLUDE_DIRS})
 
-set( CMAKE_SWIG_OUTDIR ${PROJECT_SOURCE_DIR}/target/generated-sources/java/slim )
+set( CMAKE_SWIG_OUTDIR ${PROJECT_SOURCE_DIR}/target/generated-sources/main/java/slim )
 
 # Build the C code into a dynamic library
 set_property(SOURCE src/main/swig/SLIMCurve.i PROPERTY CPLUSPLUS ON)

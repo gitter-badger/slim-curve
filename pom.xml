@@ -188,7 +188,7 @@ University of Wisconsin-Madison.</license.copyrightOwners>
 						</goals>
 						<configuration>
 							<sources>
-								<source>${project.build.directory}/generated-sources/java/slim/</source>
+								<source>${project.build.directory}/generated-sources/main/java/</source>
 							</sources>
 						</configuration>
 					</execution>

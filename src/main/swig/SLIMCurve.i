@@ -34,7 +34,7 @@ MATMAP(F2D_in, float, Float, F, Float2DMatrix)
 MATMAP(I2D_in, int, Int, I, Int2DMatrix)
 
 // Tell swig to use corresponding typemaps (OUTPUT defined in typemaps.i)
-%apply int *INPUT { int* };
+%apply int *OUTPUT { int* };
 %apply float *OUTPUT { float * };
 %apply double *OUTPUT { double * };
 %apply F2D_in {

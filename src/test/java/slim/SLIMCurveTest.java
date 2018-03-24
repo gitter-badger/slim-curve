@@ -112,8 +112,19 @@ public class SLIMCurveTest {
 			0.07927619665861129760742187500000000,
 			0.03122770041227340698242187500000000
 	};  
+	final float instrf[] = {
+			0.00911042001098394393920898437500000f,
+			0.03882249817252159118652343750000000f,
+			0.13171100616455078125000000000000000f,
+			0.25238901376724243164062500000000000f,
+			0.27722999453544616699218750000000000f,
+			0.18023300170898437500000000000000000f,
+			0.07927619665861129760742187500000000f,
+			0.03122770041227340698242187500000000f
+	}; 
 	final int noise = 5;
-	final double sig[] = {}; 
+	final double sig[] = {};
+	final float sigf[] = {};
 	final double z[]  = {0};
 	final double a[]  = {1000};
 	final double tau[] = {2};
@@ -136,7 +147,7 @@ public class SLIMCurveTest {
 	float[] residuals = {0};
 	int[] df = {0};
 	float[] chisq_global = {0};
-	int restrain = 1;
+	RestrainType restrain = RestrainType.ECF_RESTRAIN_DEFAULT;
 	String fitFunc = "GCI_MULTIEXP_LAMBDA";
 	
 
@@ -179,16 +190,24 @@ public class SLIMCurveTest {
 		assertEquals("Chi squared value is not correct", _x2, (int)chiSquare[0] / chi_sq_adjust);
 	
 	}
-	/*@Test
+	@Test
 	public void testGCIGlobalWrapperCall() {		
 		int result = NEVER_CALLED;
-		result = SLIMCurve.GCI_marquardt_global_exps_instr(xInc, trans, fitStart, 
-				fitEnd, instr, instr.length, noise, sig, ftype, param, paramFree, restrain, 
-				chisq_delta, fitted, residuals, chisq_trans, chisq_global, null, drop_bad_transients);
+		int nData = 3;
+		final int fitStart = 0;
+		final int fitEnd = 2;
+		final int ftype = 0;
+		Float2DMatrix trans = new Float2DMatrix(new float[][]{{2, 3, 4}});
+		Float2DMatrix param = new Float2DMatrix(new float[][]{{0, 1000, 2}});
+		Float2DMatrix fitted = new Float2DMatrix(new float[1][nData]);
+		Float2DMatrix residuals = new Float2DMatrix(new float[1][nData]);
+		result = SLIMCurve.GCI_marquardt_global_exps_instr((float)xInc, trans, fitStart, fitEnd, instrf, 
+				NoiseType.swigToEnum(5), sigf, ftype, param, paramFree, restrain, chisq_delta, 
+				fitted, residuals, chisq_trans, chisq_global, df, result);
 		System.out.println("result: " + result);
 		assertTrue(result != NEVER_CALLED);
-		
 	}
+	/*
 	@Test
 	public void testGCIGlobalGenericCall() {
 		int result = NEVER_CALLED;
