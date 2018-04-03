@@ -28,10 +28,6 @@ import static org.junit.Assert.*;
 import java.util.Random;
 
 import org.junit.Test;
-//import org.scijava.nativelib.NativeLoader;
-
-import slim.*;
-
 
 /**
  * Tests {@link SLIMCurve}.  Test parameters currently based 
@@ -40,20 +36,6 @@ import slim.*;
  * @author Zach Petersen, Dasong Gao
  */
 public class SLIMCurveTest {
-//static {
-//        
-//        try {
-//            System.loadLibrary("slim-curve");
-//            System.loadLibrary("slim-curve-java");
-//        	//NativeLoader.loadLibrary("META-INF/lib/windows_64/slim-curve-java");
-//            //NativeLoader.loadLibrary("META-INF/lib/windows_64/slim-curve");
-//            
-//        } catch (Exception e) {
-//            //System.err.println("Native library failed to load. Exiting.\n" + e);
-//            System.err.println("Cannot extract native library. Exiting.\n" + e);
-//            System.exit(1);
-//        }
-//    }
 	public static final int TEST_SIZE = 100;
 	final int NEVER_CALLED = -100;
 	final double xInc = 0.048828125; 
