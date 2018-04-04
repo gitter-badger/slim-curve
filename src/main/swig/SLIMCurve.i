@@ -11,7 +11,7 @@
 %}
 
 %include "enums.swg"
-// for custom typemaps
+// custom typemaps
 %include "SLIMCurve_1DArray.i" // arrays (with length parameter)
 %include "SLIMCurve_2DMatrix.i" // 2D arrays (with/out length parameter)
 %include "SLIMCurve_FittingFunc.i" // fitting function pointer
@@ -34,9 +34,10 @@ MATMAP(F2D_in, float, Float, F, Float2DMatrix)
 MATMAP(I2D_in, int, Int, I, Int2DMatrix)
 
 // Tell swig to use corresponding typemaps (OUTPUT defined in typemaps.i)
-%apply int *OUTPUT { int* };
+%apply int *INOUT { int* };
+%apply float *INOUT { float * residuals, float * fitted };
 %apply float *OUTPUT { float * };
-%apply double *OUTPUT { double * };
+%apply double *INOUT { double * };
 %apply F2D_in {
     (float **trans, int ndata, int ntrans)
 }
