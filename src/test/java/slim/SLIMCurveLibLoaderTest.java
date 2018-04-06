@@ -23,7 +23,10 @@
 
 package slim;
 
+import java.io.IOException;
+
 import org.junit.Test;
+import org.scijava.nativelib.NativeLoader;
 
 /**
  * Tests {@link NativeLoader}.
@@ -34,7 +37,11 @@ public class SLIMCurveLibLoaderTest {
 	/** Tests {@link NativeLoader#loadLibrary}. */
 	@Test
 	public void testLoader() {
-		NativeLoader.loadLibrary("slim-curve");
-		NativeLoader.loadLibrary("slim-curve-jni");
+		try {
+			NativeLoader.loadLibrary("slim-curve");
+			NativeLoader.loadLibrary("slim-curve-jni");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
