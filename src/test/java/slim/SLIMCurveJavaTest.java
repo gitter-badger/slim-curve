@@ -40,8 +40,9 @@ import org.junit.Test;
 public class SLIMCurveJavaTest {
 	public static final int TEST_SIZE = 100;
 	public static final int SEED = 0x1226;
-	final float tolerance = 1e-5f;
-	final int NEVER_CALLED = -100;
+	final static float tolerance = 1e-5f;
+	final static Random rng = new Random(SEED);
+	final static int DEFAULT_RET = -100;
 	final double xincd = 0.048828125; 
 	final float xinc = 0.048828125f; 
 	final float y[] = {
@@ -149,12 +150,55 @@ public class SLIMCurveJavaTest {
 		return doubleOut;
 	}
 	
+	private static void compareWithLMA(float xinc, float[] y, int fit_start, int fit_end, float[] instr, 
+			NoiseType noise, float[] sig, float[] param, int[] paramfree, RestrainType restrain, FitFunc func, float[] fitted, 
+			float[] residuals, float[] chisquare, Float2DMatrix covar, Float2DMatrix alpha, Float2DMatrix erraxes, float chisq_target, float chisq_delta, 
+			int chisq_percent,
+			int actualRet, float actualParam[], Float2DMatrix actualCovar, Float2DMatrix actualAlpha, Float2DMatrix actualErraxes,
+			float[] actualFitted, float[] actualResiduals, float[] actualChisquare) {
+		int ret = SLIMCurve.GCI_marquardt_fitting_engine(xinc, y, fit_start, fit_end, instr, 
+				noise, sig, param, paramfree, restrain, func, fitted, 
+				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
+				chisq_percent);
+		if (actualRet != DEFAULT_RET)
+			assertEquals("lma value incorrect", ret, actualRet);
+		// pull out matrices, those should have the same size
+		int col = covar.getNcol(), row = covar.getNrow();
+		float[][] cov = covar.asArray(), aCov = null;
+		if (actualCovar != null)
+			aCov = actualCovar.asArray();
+		float[][] alph = alpha.asArray(), aAlph = null;
+		if (actualAlpha != null)
+			aAlph = actualAlpha.asArray();
+		float[][] err = erraxes.asArray(), aErr = null;
+		if (actualErraxes != null)
+			aErr = actualErraxes.asArray();
+		for (int i = 0; i < TEST_SIZE; i++) {
+			int idx = rng.nextInt(param.length);
+			if (actualParam != null)
+				assertEquals("param matrix incorrect", param[idx], actualParam[idx], tolerance);
+			idx = rng.nextInt(col * row - 1);
+			if (aCov != null)
+				assertEquals("covariance matrix incorrect", cov[idx / row][idx % col], aCov[idx / row][idx % col], tolerance);
+			if (aAlph != null)
+				assertEquals("alpha matrix incorrect", alph[idx / row][idx % col], aAlph[idx / row][idx % col], tolerance);
+			if (aErr != null)
+				assertEquals("erraxes matrix incorrect", err[idx / row][idx % col], aErr[idx / row][idx % col], tolerance);
+			idx = rng.nextInt(fitted.length);
+			if (actualFitted != null)
+				assertEquals("fitted incorrect", fitted[idx], actualFitted[idx], tolerance);
+			if (actualResiduals != null)
+				assertEquals("residuals incorrect", residuals[idx], actualResiduals[idx], tolerance);
+		}
+		if (actualChisquare != null)
+			assertEquals("Chi square incorrect", chisquare[0], actualChisquare[0], tolerance);
+	}
+	
 	@Before
 	public void setUp() {
 		for (int i = 0; i < sig.length; i++)
 			sigd[i] = sig[i] = 1.0f;
 	}
-	
 
 	/** Tests {@link SLIMCurve#fitRLD}. */
 	@Test
@@ -183,20 +227,20 @@ public class SLIMCurveJavaTest {
 	/** Tests {@link SLIMCurve#GCI_marquardt_global_exps_instr}. */
 	@Test
 	public void testGCIGlobalWrapperCall() {		
-		int result = NEVER_CALLED;
+		int result = DEFAULT_RET;
 		Float2DMatrix fitted = new Float2DMatrix(new float[1][ndata]);
 		Float2DMatrix residuals = new Float2DMatrix(new float[1][ndata]);
 		result = SLIMCurve.GCI_marquardt_global_exps_instr(xinc, trans, fit_start, fit_end, instr, 
 				NoiseType.swigToEnum(5), sig, FitType.FIT_GLOBAL_MULTIEXP, param2d, paramfree, restrain, chisq_delta, 
 				fitted, residuals, chisq_trans, chisq_global, df, 1);
 		//System.out.println("result: " + result);
-		assertTrue(result != NEVER_CALLED);
+		assertTrue(result != DEFAULT_RET);
 	}
 	
 	/** Tests {@link SLIMCurve#GCI_marquardt_global_generic_instr}. */
 	@Test
 	public void testGCIGlobalGenericCall() {
-		int result = NEVER_CALLED;
+		int result = DEFAULT_RET;
 		Float2DMatrix fitted = new Float2DMatrix(new float[1][ndata]);
 		Float2DMatrix residuals = new Float2DMatrix(new float[1][ndata]);
 		
@@ -204,7 +248,7 @@ public class SLIMCurveJavaTest {
 				instr, noise, sig, param2d, paramfree, gparam, restrain, chisq_delta, FitFunc.GCI_MULTIEXP_LAMBDA, fitted, 
 				residuals, chisq_trans, chisq_global, df);
 		//System.out.println("generic result: " + result);
-		assertTrue(result != NEVER_CALLED);
+		assertTrue(result != DEFAULT_RET);
 	}
 	
 	/** Tests {@link SLIMCurve#GCI_Phasor}. */
@@ -217,17 +261,17 @@ public class SLIMCurveJavaTest {
 		
 		int ret = SLIMCurve.GCI_Phasor(xinc, y, fit_start, fit_end, z, u, v, taup, taum, tau, fitted, residuals, chisquare);
 		assertEquals("phasor failed", ret, 0);
-		assertEquals("z incorrect", z[0], 0.0f, tolerance);
-		assertEquals("u incorrect", u[0], 0.24798244f, tolerance);
-		assertEquals("v incorrect", v[0], 0.49327368f, tolerance);
-		assertEquals("taup incorrect", taup[0], 2.9834206f, tolerance);
-		assertEquals("taum incorrect", taum[0], 2.2650633f, tolerance);
-		assertEquals("Chi square incorrect", chisquare[0], 81201.26f, tolerance);
-		assertArrayEquals(Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1),
-				new float[] {293.38422f, 287.97586f, 282.66714f, 277.45636f, 272.34155f}, tolerance);
-		assertArrayEquals(Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1),
-				new float[] {0.6157837f, 16.02414f, -18.667145f, 15.54364f, 21.658447f}, tolerance);
-		assertEquals("period incorrect", SLIMCurve.GCI_Phasor_getPeriod(), 9.423828125f, tolerance);
+		assertEquals("z incorrect", 0.0f, z[0], tolerance);
+		assertEquals("u incorrect", 0.24798244f, u[0], tolerance);
+		assertEquals("v incorrect", 0.49327368f, v[0], tolerance);
+		assertEquals("taup incorrect", 2.9834206f, taup[0], tolerance);
+		assertEquals("taum incorrect", 2.2650633f, taum[0], tolerance);
+		assertEquals("Chi square incorrect", 81201.26f, chisquare[0], tolerance);
+		assertArrayEquals(new float[] {293.38422f, 287.97586f, 282.66714f, 277.45636f, 272.34155f},
+				Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1), tolerance);
+		assertArrayEquals(new float[] {0.6157837f, 16.02414f, -18.667145f, 15.54364f, 21.658447f},
+				Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1), tolerance);
+		assertEquals("period incorrect", 9.423828125f, SLIMCurve.GCI_Phasor_getPeriod(), tolerance);
 	}
 	
 	/** Tests {@link SLIMCurve#GCI_triple_integral_fitting_engine}. */
@@ -261,7 +305,7 @@ public class SLIMCurveJavaTest {
 	/** Tests {@link SLIMCurve#GCI_marquardt_fitting_engine}. */
 	@Test
 	public void testGCI_marquardt_fitting_engine() {
-		final float param0[] = { 0, 1000, 2}; // z, a, tau
+		final float param0[] = { 0, 1000, 2 }; // z, a, tau
 		int ret0 = SLIMCurve.GCI_marquardt_fitting_engine(xinc, y, fit_start, fit_end, instr, 
 				noise, sig, param0, paramfree, restrain, FitFunc.GCI_MULTIEXP_TAU, fitted, 
 				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
@@ -296,12 +340,13 @@ public class SLIMCurveJavaTest {
 	}
 	
 	/** Tests {@link SLIMCurve#GCI_EcfModelSelectionEngine}. */
-	//@Test
+	@Test
 	public void testGCI_EcfModelSelectionEngine() {
-		float chisq_diff[] = { 0, 0 };
+		// setup arguments
+		float chisq_diff[] = { 0 };
 		int model[] = { -1 };
 		final float param0[] = { 0, 1000, 2};
-		final float param1[] = { 0, 1000, 2};
+		final float param1[] = { 0, 1000, 0.5f};
 		final int paramfree0[] = {1, 1, 1};
 		final int paramfree1[] = {1, 1, 1};
 		Float2DMatrix covar0 = new Float2DMatrix(new float[nparam][nparam]);
@@ -314,19 +359,27 @@ public class SLIMCurveJavaTest {
 		float[] fitted1 = new float[ndata];
 		float[] residuals0 = new float[ndata];
 		float[] residuals1 = new float[ndata];
+		
+		// create two models to compare
 		DecayModelSelParamValuesAndFit paramsandfits[] = { 
-				new DecayModelSelParamValuesAndFit(FitFunc.GCI_MULTIEXP_LAMBDA, param0, paramfree0, restrain, fitted0, 
+				new DecayModelSelParamValuesAndFit(FitFunc.GCI_MULTIEXP_TAU, param0, paramfree0, restrain, fitted0, 
 						residuals0, chisq_target, chisq_delta, chisq_percent, chisquare[0], covar0, alpha0, erraxes0),
 				new DecayModelSelParamValuesAndFit(FitFunc.GCI_MULTIEXP_LAMBDA, param1, paramfree1, restrain, fitted1, 
 						residuals1, chisq_target, chisq_delta, chisq_percent, chisquare[0], covar1, alpha1, erraxes1)
 		};
-		int ret = SLIMCurve.GCI_EcfModelSelectionEngine(xinc, y, fit_start, 12, instr, noise, sig, paramsandfits, chisq_diff, model);
-		System.out.println(ret);
+		int ret = SLIMCurve.GCI_EcfModelSelectionEngine(xinc, y, fit_start, fit_end, instr, noise, sig, paramsandfits, chisq_diff, model);
+		
+		assertEquals("selection failed", ret, 0);
+		compareWithLMA(xinc, y, fit_start, fit_end, instr, 
+				noise, sig, param, paramfree, restrain, FitFunc.GCI_MULTIEXP_TAU, fitted, 
+				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
+				chisq_percent, DEFAULT_RET, null, covar0, alpha0, erraxes0, fitted0, residuals0, null);
+		assertEquals("chisq_diff incorrect", 97.53906, chisq_diff[0], tolerance);
+		assertEquals("model incorrect", 2, model[0]);
 	}
 	/** Tests {@link Float2DMatrix}.  */
 	@Test
 	public void testFloat2DMatrix() {
-		Random rng = new Random(SEED);
 		for (int i = 0; i < TEST_SIZE; i++) {
 			int row = rng.nextInt(10) + 1;
 			int col = rng.nextInt(10) + 1;
@@ -349,7 +402,6 @@ public class SLIMCurveJavaTest {
 	/** Tests {@link Float2DMatrix}.  */
 	@Test
 	public void testInt2DMatrix() {
-		Random rng = new Random(SEED);
 		for (int i = 0; i < TEST_SIZE; i++) {
 			int row = rng.nextInt(10) + 1;
 			int col = rng.nextInt(10) + 1;

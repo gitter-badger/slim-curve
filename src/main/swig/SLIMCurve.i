@@ -42,28 +42,28 @@ MATMAP(I2D_in, int, Int, I, Int2DMatrix)
 %apply double *INOUT { double * };
 %apply FITTYPEENUM { int ftype };
 %apply F2D_in {
-    (float **trans, int ndata, int ntrans)
+	(float **trans, int ndata, int ntrans)
 }
 %apply INTARRIN_LEN {
-    (int paramfree[], int nparam),
-    (int paramfree[], int nparamfree),
-    (int param_free[], int n_param)
+	(int paramfree[], int nparam),
+	(int paramfree[], int nparamfree),
+	(int param_free[], int n_param)
 }
 %apply FLTARRIN_LEN {
-    (float params[], int nparam),
-    (float y[], int ndata)
+	(float params[], int nparam),
+	(float y[], int ndata)
 }
 %apply FLTPTRIN_LEN {
-    (float *trans, int ndata)
+	(float *trans, int ndata)
 }
 %apply FLTARRIN_NUL {
-    (float instr[], int ninstr)
+	(float instr[], int ninstr)
 }
 %apply FLTPTRIN_KEEP {
-    float *fitted_buf, float *residuals_buf
+	float *fitted_buf, float *residuals_buf
 }
 %apply DBLARRIN_NUL {
-    (double instr[], int n_instr)
+	(double instr[], int n_instr)
 }
 
 // Grab functions from header files as class methods
@@ -78,13 +78,13 @@ MATMAP(I2D_in, int, Int, I, Int2DMatrix)
 %}
 
 %pragma(java) jniclasscode=%{
-    static {
-        try {
-            NativeLoader.loadLibrary("slim-curve");
-            NativeLoader.loadLibrary("slim-curve-jni");
-        } catch (IOException e) {
-            System.err.println("Failed to load library:\n" + e.getMessage());
-            System.exit(1);
-        }
-    }
+	static {
+		try {
+			NativeLoader.loadLibrary("slim-curve");
+			NativeLoader.loadLibrary("slim-curve-jni");
+		} catch (IOException e) {
+			System.err.println("Failed to load library:\n" + e.getMessage());
+			System.exit(1);
+		}
+	}
 %}
