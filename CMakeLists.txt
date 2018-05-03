@@ -83,14 +83,18 @@ include(UseJava)
 include(UseSWIG)
 include_directories(${JNI_INCLUDE_DIRS})
 
+# direcotries where the generated java classes and c wrapper are kept
 set( CMAKE_SWIG_OUTDIR ${PROJECT_SOURCE_DIR}/target/generated-sources/main/java/slim )
+file(MAKE_DIRECTORY ${CMAKE_SWIG_OUTDIR})
+set( SWIG_OUTFILE_DIR ${PROJECT_SOURCE_DIR}/target/generated-sources/main/cpp )
+file(MAKE_DIRECTORY ${SWIG_OUTFILE_DIR})
 
 # Build the C code into a dynamic library
 set_property(SOURCE src/main/swig/SLIMCurve.i PROPERTY CPLUSPLUS ON)
 swig_add_library(
     slim-curve-jni 
     TYPE SHARED
-    LANGUAGE java 
+    LANGUAGE java
     SOURCES 
     	src/main/swig/SLIMCurve.i
 )

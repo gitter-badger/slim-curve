@@ -122,7 +122,7 @@ public String toString() {
 		else
 			data += "  [ " + row + "] ]\n";
 	}
-	return data;//String.format("%s(%d*%d): %s", this.getClass().getSimpleName(), this.getNrow(), this.getNcol(), data);
+	return data;
 }
 %}
 %template(JType##2DMatrix) ParamMatrix<jType>;

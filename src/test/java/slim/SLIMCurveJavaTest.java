@@ -176,23 +176,41 @@ public class SLIMCurveJavaTest {
 		for (int i = 0; i < TEST_SIZE; i++) {
 			int idx = rng.nextInt(param.length);
 			if (actualParam != null)
-				assertEquals("param matrix incorrect", param[idx], actualParam[idx], tolerance);
+				assertEqualsScaled("param matrix incorrect", param[idx], actualParam[idx], tolerance);
 			idx = rng.nextInt(col * row - 1);
 			if (aCov != null)
-				assertEquals("covariance matrix incorrect", cov[idx / row][idx % col], aCov[idx / row][idx % col], tolerance);
+				assertEqualsScaled("covariance matrix incorrect", cov[idx / row][idx % col], aCov[idx / row][idx % col], tolerance);
 			if (aAlph != null)
-				assertEquals("alpha matrix incorrect", alph[idx / row][idx % col], aAlph[idx / row][idx % col], tolerance);
+				assertEqualsScaled("alpha matrix incorrect", alph[idx / row][idx % col], aAlph[idx / row][idx % col], tolerance);
 			if (aErr != null)
-				assertEquals("erraxes matrix incorrect", err[idx / row][idx % col], aErr[idx / row][idx % col], tolerance);
+				assertEqualsScaled("erraxes matrix incorrect", err[idx / row][idx % col], aErr[idx / row][idx % col], tolerance);
 			idx = rng.nextInt(fitted.length);
 			if (actualFitted != null)
-				assertEquals("fitted incorrect", fitted[idx], actualFitted[idx], tolerance);
+				assertEqualsScaled("fitted incorrect", fitted[idx], actualFitted[idx], tolerance);
 			if (actualResiduals != null)
-				assertEquals("residuals incorrect", residuals[idx], actualResiduals[idx], tolerance);
+				assertEqualsScaled("residuals incorrect", residuals[idx], actualResiduals[idx], tolerance);
 		}
 		if (actualChisquare != null)
-			assertEquals("Chi square incorrect", chisquare[0], actualChisquare[0], tolerance);
+			assertEqualsScaled("Chi square incorrect", chisquare[0], actualChisquare[0], tolerance);
 	}
+	
+	private static void assertEqualsScaled(String message, double expected, double actual, double delta) {
+		assertEquals(message, expected, actual, Math.abs(expected * delta));
+	}
+	
+	private static void assertArrayEqualsScaled(String message, float[] expecteds, float[] actuals, float delta) {
+		float maxValue = expecteds[0]; 
+		for(float n : expecteds)
+			maxValue = n > maxValue ? n : maxValue;
+		assertArrayEquals(message, expecteds, actuals, Math.abs(maxValue * delta));
+	}
+	
+//	private static void assertArrayEqualsScaled(String message, double[] expecteds, double[] actuals, double delta) {
+//		double maxValue = expecteds[0]; 
+//		for(double n : expecteds)
+//			maxValue = n > maxValue ? n : maxValue;
+//		assertArrayEqualsScaled(message, expecteds, actuals, Math.abs(maxValue * delta));
+//	}
 	
 	@Before
 	public void setUp() {
@@ -205,10 +223,10 @@ public class SLIMCurveJavaTest {
 	public void testFitRLD() {
 		final int rld = SLIMCurve.RLD_fit(xincd, yd, fit_start, fit_end, instrd, 5, sigd, zd, ad, taud, fittedd, chisquared, chisq_targetd);
 		assertEquals("rld incorrect", 2, rld);
-		assertEquals("a incorrect", 11823.900390625, ad[0], tolerance);
-		assertEquals("tau incorrect", 2.350015878677368, taud[0], tolerance);
-		assertEquals("z incorrect", 105.92437744140625, zd[0], tolerance);
-		assertEquals("Chi square incorrect", 78742.3359375, chisquared[0], tolerance);
+		assertEqualsScaled("a incorrect", 11823.900390625, ad[0], tolerance);
+		assertEqualsScaled("tau incorrect", 2.350015878677368, taud[0], tolerance);
+		assertEqualsScaled("z incorrect", 105.92437744140625, zd[0], tolerance);
+		assertEqualsScaled("Chi square incorrect", 78742.3359375, chisquared[0], tolerance);
 	}
 
 	/** Tests {@link SLIMCurve#fitLMA}. */
@@ -217,10 +235,10 @@ public class SLIMCurveJavaTest {
 		final double param[] = { 5.263157800072804E-5, 0.0, 1000.0, 2.0 };
 		final int lma = SLIMCurve.LMA_fit(xincd, yd, fit_start, fit_end, instrd, 5, sigd, param, paramfree, fittedd, chisquared, chisq_targetd, chisquared[0]);
 		assertEquals("lma incorrect", 58, lma);
-		assertEquals("a incorrect", 10501.380859375, param[2], tolerance);
-		assertEquals("tau incorrect", 2.8925282955169678, param[3], tolerance);
-		assertEquals("z incorrect", -163.77395629882812, param[1], tolerance);
-		assertEquals("Chi square incorrect", 83087.8671875, chisquared[0], tolerance);
+		assertEqualsScaled("a incorrect", 10501.380859375, param[2], tolerance);
+		assertEqualsScaled("tau incorrect", 2.8925282955169678, param[3], tolerance);
+		assertEqualsScaled("z incorrect", -163.77395629882812, param[1], tolerance);
+		assertEqualsScaled("Chi square incorrect", 83087.8671875, chisquared[0], tolerance);
 	
 	}
 	
@@ -233,7 +251,6 @@ public class SLIMCurveJavaTest {
 		result = SLIMCurve.GCI_marquardt_global_exps_instr(xinc, trans, fit_start, fit_end, instr, 
 				NoiseType.swigToEnum(5), sig, FitType.FIT_GLOBAL_MULTIEXP, param2d, paramfree, restrain, chisq_delta, 
 				fitted, residuals, chisq_trans, chisq_global, df, 1);
-		//System.out.println("result: " + result);
 		assertTrue(result != DEFAULT_RET);
 	}
 	
@@ -247,7 +264,6 @@ public class SLIMCurveJavaTest {
 		result = SLIMCurve.GCI_marquardt_global_generic_instr(xinc, trans, fit_start, fit_end,
 				instr, noise, sig, param2d, paramfree, gparam, restrain, chisq_delta, FitFunc.GCI_MULTIEXP_LAMBDA, fitted, 
 				residuals, chisq_trans, chisq_global, df);
-		//System.out.println("generic result: " + result);
 		assertTrue(result != DEFAULT_RET);
 	}
 	
@@ -261,17 +277,17 @@ public class SLIMCurveJavaTest {
 		
 		int ret = SLIMCurve.GCI_Phasor(xinc, y, fit_start, fit_end, z, u, v, taup, taum, tau, fitted, residuals, chisquare);
 		assertEquals("phasor failed", ret, 0);
-		assertEquals("z incorrect", 0.0f, z[0], tolerance);
-		assertEquals("u incorrect", 0.24798244f, u[0], tolerance);
-		assertEquals("v incorrect", 0.49327368f, v[0], tolerance);
-		assertEquals("taup incorrect", 2.9834206f, taup[0], tolerance);
-		assertEquals("taum incorrect", 2.2650633f, taum[0], tolerance);
-		assertEquals("Chi square incorrect", 81201.26f, chisquare[0], tolerance);
-		assertArrayEquals(new float[] {293.38422f, 287.97586f, 282.66714f, 277.45636f, 272.34155f},
+		assertEqualsScaled("z incorrect", 0.0f, z[0], tolerance);
+		assertEqualsScaled("u incorrect", 0.24798244f, u[0], tolerance);
+		assertEqualsScaled("v incorrect", 0.49327368f, v[0], tolerance);
+		assertEqualsScaled("taup incorrect", 2.9834206f, taup[0], tolerance);
+		assertEqualsScaled("taum incorrect", 2.2650633f, taum[0], tolerance);
+		assertEqualsScaled("Chi square incorrect", 81201.26f, chisquare[0], tolerance);
+		assertArrayEqualsScaled("fitted incorrect", new float[] {293.38422f, 287.97586f, 282.66714f, 277.45636f, 272.34155f},
 				Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1), tolerance);
-		assertArrayEquals(new float[] {0.6157837f, 16.02414f, -18.667145f, 15.54364f, 21.658447f},
+		assertArrayEqualsScaled("residuals incorrect", new float[] {0.6157837f, 16.02414f, -18.667145f, 15.54364f, 21.658447f},
 				Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1), tolerance);
-		assertEquals("period incorrect", 9.423828125f, SLIMCurve.GCI_Phasor_getPeriod(), tolerance);
+		assertEqualsScaled("period incorrect", 9.423828125f, SLIMCurve.GCI_Phasor_getPeriod(), tolerance);
 	}
 	
 	/** Tests {@link SLIMCurve#GCI_triple_integral_fitting_engine}. */
@@ -281,25 +297,25 @@ public class SLIMCurveJavaTest {
 		int ret0 = SLIMCurve.GCI_triple_integral_fitting_engine(xinc, y, fit_start, fit_end, instr, noise, sig, z, a,
 				tau, fitted, residuals, chisquare, chisq_target);
 		assertEquals("rld value incorrect", 2, ret0);
-		assertEquals("z incorrect", z[0], 105.92438, tolerance);
-		assertEquals("a incorrect", a[0], 11823.900390625, tolerance);
-		assertEquals("Chi square incorrect", 78742.3359375, chisquare[0], tolerance);
-		assertArrayEquals("fitted incorrect", Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1),
-				new float[] {241.53043f, 236.57343f, 231.71306f, 226.94742f, 222.27469f}, tolerance);
-		assertArrayEquals("residuals incorrect", Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1),
+		assertEqualsScaled("z incorrect", 105.92438, z[0], tolerance);
+		assertEqualsScaled("a incorrect", 11823.900390625, a[0], tolerance);
+		assertEqualsScaled("Chi square incorrect", 78742.3359375, chisquare[0], tolerance);
+		assertArrayEqualsScaled("fitted incorrect", Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1),
+				new float[] {241.53043f, 236.57343f, 231.71307f, 226.94742f, 222.27469f}, tolerance);
+		assertArrayEqualsScaled("residuals incorrect", Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1),
 				new float[] {52.469574f, 67.426575f, 32.28694f, 66.05258f, 71.72531f}, tolerance);
 		
 		chisquare[0] = z[0] = a[0] = tau[0] = 0;
 		int ret1 = SLIMCurve.GCI_triple_integral_fitting_engine(xinc, y, fit_start, fit_end, instr, NoiseType.NOISE_GAUSSIAN_FIT, sig, z, a,
 				tau, fitted, residuals, chisquare, chisq_target);
 		assertEquals("rld value incorrect", 2, ret1);
-		assertEquals("z incorrect", z[0], 105.92438, tolerance);
-		assertEquals("a incorrect", a[0], 11823.900390625, tolerance);
-		assertEquals("Chi square incorrect", 78742.3359375, chisquare[0], tolerance);
-		assertArrayEquals("fitted incorrect", Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1),
-				new float[] {241.53043f, 236.57343f, 231.71306f, 226.94742f, 222.27469f}, tolerance);
-		assertArrayEquals("residuals incorrect", Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1),
-				new float[] {52.469574f, 67.426575f, 32.28694f, 66.05258f, 71.72531f}, tolerance);
+		assertEqualsScaled("z incorrect", 105.92438, z[0], tolerance);
+		assertEqualsScaled("a incorrect", 11823.900390625, a[0], tolerance);
+		assertEqualsScaled("Chi square incorrect", 78742.3359375, chisquare[0], tolerance);
+		assertArrayEqualsScaled("fitted incorrect", new float[] {241.53043f, 236.57343f, 231.71306f, 226.94742f, 222.27469f},
+				Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1), tolerance);
+		assertArrayEqualsScaled("residuals incorrect", new float[] {52.469574f, 67.426575f, 32.28694f, 66.05258f, 71.72531f},
+				Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1), tolerance);
 	}
 	
 	/** Tests {@link SLIMCurve#GCI_marquardt_fitting_engine}. */
@@ -311,15 +327,15 @@ public class SLIMCurveJavaTest {
 				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
 				chisq_percent);
 		assertEquals("lma value incorrect", 57, ret0);
-		assertArrayEquals("param matrix incorrect", param0, new float[] { -163.77396f, 10501.38f, 2.8925283f }, tolerance);
-		assertEquals("covariance matrix incorrect", covar.asArray()[1][2], -0.18844599, tolerance);
-		assertEquals("alpha matrix incorrect", alpha.asArray()[1][2], 19.542074, tolerance);
-		assertEquals("erraxes matrix incorrect", erraxes.asArray()[1][2], 1.3784504E-6, tolerance / 1E6);
-		assertEquals("Chi square incorrect", 83087.8984375, chisquare[0], tolerance);
-		assertArrayEquals("fitted incorrect", Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1),
-				new float[] {231.93842f, 225.31448f, 218.80151f, 212.39758f, 206.1008f}, tolerance);
-		assertArrayEquals("residuals incorrect", Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1),
-				new float[] {62.061584f, 78.68552f, 45.198486f, 80.60242f, 87.8992f}, tolerance);
+		assertArrayEqualsScaled("param matrix incorrect", new float[] { -163.77396f, 10501.38f, 2.8925283f }, param0, tolerance);
+		assertEqualsScaled("covariance matrix incorrect", -0.18844598531723, covar.asArray()[1][2], tolerance);
+		assertEqualsScaled("alpha matrix incorrect", 19.542074, alpha.asArray()[1][2], tolerance);
+		assertEqualsScaled("erraxes matrix incorrect", 1.3784504E-6, erraxes.asArray()[1][2], tolerance);
+		assertEqualsScaled("Chi square incorrect", 83087.8984375, chisquare[0], tolerance);
+		assertArrayEqualsScaled("fitted incorrect", new float[] {231.93842f, 225.31448f, 218.80151f, 212.39758f, 206.1008f},
+				Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1), tolerance);
+		assertArrayEqualsScaled("residuals incorrect", new float[] {62.061584f, 78.68552f, 45.198486f, 80.60242f, 87.8992f},
+				Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1), tolerance);
 		
 		// z, a should be approximately the same; lambda * tau should be approximately 1
 		final float[] param1 = { 0, 1000, 0.5f }; // z, a, lambda
@@ -328,15 +344,15 @@ public class SLIMCurveJavaTest {
 				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
 				chisq_percent);
 		assertEquals("lma value incorrect", 40, ret1);
-		assertArrayEquals("param matrix incorrect", param1, new float[] { -158.19781f, 10513.9375f, 0.34687048f }, tolerance);
-		assertEquals("covariance matrix incorrect", covar.asArray()[1][2], 0.022667186, tolerance);
-		assertEquals("alpha matrix incorrect", alpha.asArray()[1][2], -161.95181, tolerance);
-		assertEquals("erraxes matrix incorrect", erraxes.asArray()[1][2], -1.9851784E-8, tolerance / 1E6);
-		assertEquals("Chi square incorrect", 82995.6953125, chisquare[0], tolerance);
-		assertArrayEquals("fitted incorrect", Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1),
-				new float[] {233.6828f, 227.10132f, 220.63046f, 214.26831f, 208.01291f}, tolerance);
-		assertArrayEquals("residuals incorrect", Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1),
-				new float[] {60.3172f, 76.89868f, 43.369537f, 78.73169f, 85.98709f}, tolerance);
+		assertArrayEqualsScaled("param matrix incorrect", new float[] { -158.19781f, 10513.9375f, 0.34687048f }, param1, tolerance);
+		assertEqualsScaled("covariance matrix incorrect", 0.022667186, covar.asArray()[1][2], tolerance);
+		assertEqualsScaled("alpha matrix incorrect", -161.95181, alpha.asArray()[1][2], tolerance);
+		assertEqualsScaled("erraxes matrix incorrect", -1.9851784E-8, erraxes.asArray()[1][2], tolerance);
+		assertEqualsScaled("Chi square incorrect", 82995.6953125, chisquare[0], tolerance);
+		assertArrayEqualsScaled("fitted incorrect", new float[] {233.6828f, 227.10132f, 220.63046f, 214.26831f, 208.01291f},
+				Arrays.copyOfRange(fitted, fitted.length - 6, fitted.length - 1), tolerance);
+		assertArrayEqualsScaled("residuals incorrect", new float[] {60.3172f, 76.89868f, 43.369537f, 78.73169f, 85.98709f},
+				Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1), tolerance);
 	}
 	
 	/** Tests {@link SLIMCurve#GCI_EcfModelSelectionEngine}. */
@@ -374,7 +390,7 @@ public class SLIMCurveJavaTest {
 				noise, sig, param, paramfree, restrain, FitFunc.GCI_MULTIEXP_TAU, fitted, 
 				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
 				chisq_percent, DEFAULT_RET, null, covar0, alpha0, erraxes0, fitted0, residuals0, null);
-		assertEquals("chisq_diff incorrect", 97.53906, chisq_diff[0], tolerance);
+		assertEqualsScaled("chisq_diff incorrect", 97.53906, chisq_diff[0], tolerance);
 		assertEquals("model incorrect", 2, model[0]);
 	}
 	/** Tests {@link Float2DMatrix}.  */
@@ -395,7 +411,7 @@ public class SLIMCurveJavaTest {
 			mat.delete();
 			assertEquals(arr.length, arrOut.length);
 			for (int j = 0; j < arr.length; j++)
-				assertArrayEquals("Float2DMatrix not equal", arr[j], arrOut[j], 1e-10f);
+				assertArrayEqualsScaled("Float2DMatrix not equal", arr[j], arrOut[j], tolerance);
 		}
 	}
 	

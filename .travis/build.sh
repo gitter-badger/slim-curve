@@ -47,4 +47,9 @@ make
 # Run the unit tests
 "$CRAM" ../tests
 
+cd ..
+mvn package
+
+ls -l ./target/
+
 # TODO: Maven deploy artifacts
