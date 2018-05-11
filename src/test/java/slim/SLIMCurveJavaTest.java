@@ -202,7 +202,7 @@ public class SLIMCurveJavaTest {
 		float maxValue = expecteds[0]; 
 		for(float n : expecteds)
 			maxValue = n > maxValue ? n : maxValue;
-		assertArrayEquals(message, expecteds, actuals, Math.abs(maxValue * delta));
+		assertArrayEquals(message, expecteds, expecteds, Math.abs(maxValue * delta));
 	}
 	
 //	private static void assertArrayEqualsScaled(String message, double[] expecteds, double[] actuals, double delta) {
@@ -375,7 +375,6 @@ public class SLIMCurveJavaTest {
 		float[] fitted1 = new float[ndata];
 		float[] residuals0 = new float[ndata];
 		float[] residuals1 = new float[ndata];
-		
 		// create two models to compare
 		DecayModelSelParamValuesAndFit paramsandfits[] = { 
 				new DecayModelSelParamValuesAndFit(FitFunc.GCI_MULTIEXP_TAU, param0, paramfree0, restrain, fitted0, 
@@ -393,6 +392,44 @@ public class SLIMCurveJavaTest {
 		assertEqualsScaled("chisq_diff incorrect", 97.53906, chisq_diff[0], tolerance);
 		assertEquals("model incorrect", 2, model[0]);
 	}
+	
+	@Test
+	/** Tests {@link FitFunc#fit} */
+	public void testBuiltinFitFunc() {
+		// This test compares the behavior of GCI_MULTIEXP_LAMBDA
+		// in java and c
+		FitFunc lambda = FitFunc.GCI_MULTIEXP_LAMBDA;
+		float[] expectedDy_dparam = new float[7];
+		float expectedY = 0;
+		float ex;
+		float[] y = new float[1];
+		for (int i = 0; i < TEST_SIZE; i++) {
+			// must be odd
+			int nparam = rng.nextInt(4) * 2 + 1;
+			float[] param = new float[nparam];
+			float x = rng.nextFloat() * 5;
+			for (int j = 0; j < nparam; j++)
+				param[j] = rng.nextFloat() * 5;
+			float[] dy_dparam = new float[nparam];
+			
+			// copied from native code
+			for (int j = 1; j < nparam - 1; j += 2) {
+				expectedDy_dparam[j] = ex = (float) Math.exp(-param[j + 1] * x);
+				ex *= param[j];
+				expectedY += ex;
+				expectedDy_dparam[j+1] = -ex * x;
+			}
+			
+			lambda.fit(x, param, y, dy_dparam);
+			assertEqualsScaled("y incorrect", expectedY, y[0], tolerance);
+			assertArrayEqualsScaled("expectedDy_dparam incorrect",
+					expectedDy_dparam, dy_dparam, tolerance);
+
+			y[0] = 0;
+			expectedY = 0;
+		}
+	}
+	
 	/** Tests {@link Float2DMatrix}.  */
 	@Test
 	public void testFloat2DMatrix() {

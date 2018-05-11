@@ -1,61 +1,83 @@
 %module(directors="1") SLIMCurve
 
 %rename(FitFuncNative) FitFunc;
-
 %typemap(javaclassmodifiers) FitFunc "class"
 %typemap(javainterfaces) FitFunc "FitFunc"
 
+%ignore t_jenv;
+%ignore t_fitfunc;
 %ignore do_fit;
+%ignore FitFunc::FitFunc(fitfunc func_ptr);
 %ignore FitFunc::func_ptr;
 %ignore FitFunc::nparam;
 %ignore GCI_multiexp_lambda;
 %ignore GCI_multiexp_tau;
 %ignore GCI_stretchedexp;
+%ignore NTV_GCI_MULTIEXP_LAMBDA;
+%ignore NTV_GCI_MULTIEXP_TAU;
+%ignore NTV_GCI_STRETCHEDEXP;
+
+// Built-in fitting functions as constants on java side
+%constant FitFunc& GCI_MULTIEXP_LAMBDA = NTV_GCI_MULTIEXP_LAMBDA;
+%constant FitFunc& GCI_MULTIEXP_TAU = NTV_GCI_MULTIEXP_TAU;
+%constant FitFunc& GCI_STRETCHEDEXP = NTV_GCI_STRETCHEDEXP;
 
 %inline %{
-#ifndef THREAD_JNIENV
-#define THREAD_JNIENV
-	// jenv corresponded to the current thread
-	thread_local JNIEnv *t_jenv;
-#endif
 #include "fitfunc.h"
-thread_local FitFunc *t_fitfunc;
 
+// The thread-local global variable is defined so that multiple fitting
+// functions can coexist in different threads safely.
+#ifndef THREAD_FITFUNC
+#define THREAD_FITFUNC
+thread_local FitFunc *t_fitfunc;
+#endif
+
+// Static wapper function for executing the stored fitfunc
 static void do_fit(float x, float param[], float *y, float dy_dparam[], int nparam) {
-	if (t_fitfunc->func_ptr) {
-		t_fitfunc->func_ptr(x, param, y, dy_dparam, nparam);
-	} else {
-		t_fitfunc->fit(x, param, y, dy_dparam);
-	}
+	t_fitfunc->fit(x, param, y, dy_dparam);
 }
-//typedef enum { GCI_MULTIEXP_LAMBDA, GCI_MULTIEXP_TAU, GCI_STRETCHEDEXP } fit_funcs;
+
+const FitFunc& NTV_GCI_MULTIEXP_LAMBDA = FitFunc(GCI_multiexp_lambda);
+const FitFunc& NTV_GCI_MULTIEXP_TAU = FitFunc(GCI_multiexp_tau);
+const FitFunc& NTV_GCI_STRETCHEDEXP = FitFunc(GCI_stretchedexp);
 %}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Conversion: FitFunc(J) -> void (*fitfunc)(float, float [], float *, float [], int)(C) in arguments
-%define fFunction
+%define fitfunc_ptr
 void (*fitfunc)(float, float [], float *, float [], int)
 %enddef
-%typemap(jstype) fFunction "FitFunc"
-%typemap(javain,pgcppname="n", pre="    FitFuncNative n = makeNative($javainput);")
-		fFunction  "FitFuncNative.getCPtr(n)"
-%typemap(jtype) fFunction "long"
-%typemap(jni) fFunction "jlong"
-%typemap(in) fFunction {
-	t_jenv = jenv;
+%typemap(jstype) fitfunc_ptr "FitFunc"
+%typemap(javain,pgcppname="n",
+		pre="    FitFuncNative n = FitFuncNative.makeNative($javainput);")
+		fitfunc_ptr  "FitFuncNative.getCPtr(n)"
+%typemap(jtype) fitfunc_ptr "long"
+%typemap(jni) fitfunc_ptr "jlong"
+%typemap(in) fitfunc_ptr %{
+	extern thread_local FitFunc* t_fitfunc;
+	t_fitfunc = (FitFunc*) $input;
+	// if one of those flags are set, then the corresponding variable
+	// is defined (in array map) and so nparam can be now determined
+#if defined(MAP_1D_ARR_param)
+	t_fitfunc->nparam = len_param;
+#elif defined(MAP_1D_ARR_paramfree)
+	t_fitfunc->nparam = len_paramfree;
+#endif
+	// feed the static fitting function instead
 	$1 = &do_fit;
-}
+%}
 
-// maps that copies param[] etc to and from java arguments before and after jni call
-%typemap(directorin,descriptor="[F") float[] %{
+// directorin copies c array into java array before the jni call
+// directorout copies back to c array after that
+%typemap(directorin,descriptor="[F") float y[] %{
+	$input = jenv->NewFloatArray(1);
 	jenv->SetFloatArrayRegion($input, 0, 1, $1);
 %}
-%typemap(directorargout) float* %{
+%typemap(directorargout) float y[] %{
 	jenv->GetFloatArrayRegion($input, 0, 1, $1);
 %}
 %typemap(directorin,descriptor="[F") float[] %{
-	// length is hidden from java (set before function call in do_fit)
+	// length is hidden from java (should be set before do_fit)
 	$input = jenv->NewFloatArray(this->nparam);
 	jenv->SetFloatArrayRegion($input, 0, this->nparam, $1);
 %}
@@ -66,17 +88,26 @@ void (*fitfunc)(float, float [], float *, float [], int)
 
 %feature("director") FitFunc;
 
-ARRMAP(FLTARRIN, 1, 0, float, Float, JNI_ABORT, false)
+ARRMAP(FLTARRIN, 1, 0, float, Float, 0, false, 0)
+%apply FLTARRIN { float param[], float dy_dparam[], float y[] };
 
-%apply float *OUTPUT { float * y };
-%apply FLTARRIN { float param[], float dy_dparam[] };
+%typemap(in) float dy_dparam[] (jfloat *jarr, jfloatArray, bool do_clean) %{
+#define MAP_1D_ARR_dy_dparam
+	// local reference to the java array and the length of it
+	jsize len_dy_dparam;
+	do_clean = true;
 
-%include "../cpp/fitfunc.h"
+	len_dy_dparam = (jsize) jenv->GetArrayLength($input);
+	if (!SWIG_JavaArrayInFloat(jenv, &jarr, (float **)&$1, $input))
+		exit(1);
+	t_fitfunc = (FitFunc*) jarg1;
+	if (len_param != len_dy_dparam)
+		SWIG_JavaThrowException(jenv, SWIG_JavaNullIllegalArgumentException,
+			"param number does not match dy_dparam number");
+	t_fitfunc->nparam = len_dy_dparam;
+%}
 
-%typemap(javacode) FitFuncNative %{
-	public static final FitFunc GCI_MULTIEXP_LAMBDA = null;
-	public static final FitFunc GCI_MULTIEXP_TAU = null;
-	public static final FitFunc GCI_STRETCHEDEXP = null;
+%typemap(javacode) FitFunc %{
 
 	private static class FitFuncNativeProxy extends FitFuncNative {
 		private FitFunc delegate;
@@ -84,13 +115,12 @@ ARRMAP(FLTARRIN, 1, 0, float, Float, JNI_ABORT, false)
 			delegate = i;
 		}
 
-		public void fit(float x, float[] param, float[] y, float[] dy_dparam, int nparam) {
-			return delegate.fit(x, param, y, dy_dparam, nparam);
+		public void fit(float x, float[] param, float[] y, float[] dy_dparam) {
+			delegate.fit(x, param, y, dy_dparam);
 		}
 	}
 
-  // (2.5)
-	private static FitFuncNative makeNative(FitFunc i) {
+	static FitFuncNative makeNative(FitFunc i) {
 		if (i instanceof FitFuncNative) {
       // If it already *is* a FitFuncNative don't bother wrapping it again
 			return (FitFuncNative)i;
@@ -98,3 +128,5 @@ ARRMAP(FLTARRIN, 1, 0, float, Float, JNI_ABORT, false)
 		return new FitFuncNativeProxy(i);
 	}
 %}
+
+%include "../cpp/fitfunc.h"

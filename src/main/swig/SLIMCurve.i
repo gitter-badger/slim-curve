@@ -13,7 +13,8 @@
 // custom typemaps
 %include "SLIMCurve_1DArray.i" // arrays (with length parameter)
 %include "SLIMCurve_2DMatrix.i" // 2D arrays (with/out length parameter)
-%include "SLIMCurve_FittingFunc.i" // fitting function pointer
+//%include "SLIMCurve_FittingFuncInterface.i" // fitting function pointer
+%include "SLIMCurve_FittingFunc_n.i" // fitting function pointer
 %include "SLIMCurve_DMSPVAF.i" // struct used by mode selection engine
 %include "SLIMCurve_Enums.i" // all of the enums
 %include "SLIMCurve_ProgressFunc.i" // progress function for SPA

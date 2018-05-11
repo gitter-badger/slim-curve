@@ -1,6 +1,7 @@
 %module SLIMCurve
 
 %ignore t_jenv;
+%ignore t_spa_prog;
 %ignore update_SPA_progress;
 
 %inline %{
@@ -9,11 +10,13 @@
 	// jenv corresponded to the current thread
 thread_local JNIEnv *t_jenv;
 #endif
+thread_local float t_spa_prog = 0;
 void update_SPA_progress(float prog) {
-	jclass cls = t_jenv->FindClass(PKG_NAME"/SLIMCurve");
-	jfieldID fieldId = t_jenv->GetStaticFieldID(cls, "SPAProgress", "float");
+	t_spa_prog = prog;
+}
 
-	t_jenv->SetStaticFloatField(cls, fieldId, prog);
+float getSPAProgress() {
+	return t_spa_prog;
 }
 %}
 
@@ -24,7 +27,3 @@ void update_SPA_progress(float prog) {
 
 	$1 = &update_SPA_progress;
 }
-
-%pragma(java) modulecode=%{
-	public static float SPAProgress;
-%}

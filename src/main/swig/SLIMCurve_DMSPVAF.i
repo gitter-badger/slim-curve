@@ -20,6 +20,10 @@
 		float **alpha,
 		float **erraxes) {
 		DecayModelSelParamValuesAndFit* ret = new DecayModelSelParamValuesAndFit();
+		// nparam cannot be determined until now (paramfree does not proceed
+		// fitfunc in typemap)
+		extern thread_local FitFunc* t_fitfunc;
+		t_fitfunc->nparam = nparam;
 		ret->fitfunc = fitfunc;
 		ret->nparam = nparam;
 		std::copy(params, params + nparam, ret->params);

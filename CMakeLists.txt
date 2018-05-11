@@ -107,12 +107,36 @@ swig_link_libraries(
 set( TARGET_NATIVE ${PROJECT_SOURCE_DIR}/target/natives )
 math(EXPR BITS "8*${CMAKE_SIZEOF_VOID_P}")
 set( TARGET_ARCH_BITS ${TARGET_NATIVE}/${CMAKE_SYSTEM_NAME}_${BITS} )
-
-# Copy target to the directory after build
 file(MAKE_DIRECTORY ${TARGET_ARCH_BITS})
-add_custom_command(TARGET slim-curve-jni POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:slim-curve-jni> ${TARGET_ARCH_BITS}
+
+if(WIN32)
+    set( TARGET_LIB_PREFIX "" )
+else()
+    set( TARGET_LIB_PREFIX "lib" )
+endif()
+set_target_properties(
+    slim-curve
+    PROPERTIES
+        PREFIX "${LIB_PREFIX}"
+        RUNTIME_OUTPUT_DIRECTORY "${TARGET_ARCH_BITS}"
 )
-add_custom_command(TARGET slim-curve POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:slim-curve> ${TARGET_ARCH_BITS}
+set_target_properties(
+    slim-curve-jni
+    PROPERTIES
+        PREFIX "${LIB_PREFIX}"
+        RUNTIME_OUTPUT_DIRECTORY "${TARGET_ARCH_BITS}"
 )
+
+# Detect target bitness and architecture
+# set( TARGET_NATIVE ${PROJECT_SOURCE_DIR}/target/natives )
+# math(EXPR BITS "8*${CMAKE_SIZEOF_VOID_P}")
+# set( TARGET_ARCH_BITS ${TARGET_NATIVE}/${CMAKE_SYSTEM_NAME}_${BITS} )
+
+# # Copy target to the directory after build
+# file(MAKE_DIRECTORY ${TARGET_ARCH_BITS})
+# add_custom_command(TARGET slim-curve-jni POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:slim-curve-jni> ${TARGET_ARCH_BITS}
+# )
+# add_custom_command(TARGET slim-curve POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:slim-curve> ${TARGET_ARCH_BITS}
+# )
