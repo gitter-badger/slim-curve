@@ -120,7 +120,8 @@ public class SLIMCurveJavaTest {
 	final double chisq_targetd = 237.5;
 	final float chisq_target = 237.5f;
 	final int nInstr = instr.length; 
-	final float param[] = { 0, 1000, 2};
+	final float param0[] = { 0, 1000, 2};    // z, a, tau
+	final float param1[] = { 0, 1000, 0.5f}; // z, a, lambda
 	final int paramfree[] = {1, 1, 1};
 	final int nparam = 3;	
 	final double chisq_transd[] = {}; 
@@ -321,7 +322,6 @@ public class SLIMCurveJavaTest {
 	/** Tests {@link SLIMCurve#GCI_marquardt_fitting_engine}. */
 	@Test
 	public void testGCI_marquardt_fitting_engine() {
-		final float param0[] = { 0, 1000, 2 }; // z, a, tau
 		int ret0 = SLIMCurve.GCI_marquardt_fitting_engine(xinc, y, fit_start, fit_end, instr, 
 				noise, sig, param0, paramfree, restrain, FitFunc.GCI_MULTIEXP_TAU, fitted, 
 				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
@@ -338,7 +338,6 @@ public class SLIMCurveJavaTest {
 				Arrays.copyOfRange(residuals, residuals.length - 6, residuals.length - 1), tolerance);
 		
 		// z, a should be approximately the same; lambda * tau should be approximately 1
-		final float[] param1 = { 0, 1000, 0.5f }; // z, a, lambda
 		int ret1 = SLIMCurve.GCI_marquardt_fitting_engine(xinc, y, fit_start, fit_end, instr, 
 				noise, sig, param1, paramfree, restrain, FitFunc.GCI_MULTIEXP_LAMBDA, fitted, 
 				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
@@ -359,42 +358,40 @@ public class SLIMCurveJavaTest {
 	@Test
 	public void testGCI_EcfModelSelectionEngine() {
 		// setup arguments
-		float chisq_diff[] = { 0 };
-		int model[] = { -1 };
-		final float param0[] = { 0, 1000, 2};
-		final float param1[] = { 0, 1000, 0.5f};
-		final int paramfree0[] = {1, 1, 1};
-		final int paramfree1[] = {1, 1, 1};
-		Float2DMatrix covar0 = new Float2DMatrix(new float[nparam][nparam]);
-		Float2DMatrix covar1 = new Float2DMatrix(new float[nparam][nparam]);
-		Float2DMatrix alpha0 = new Float2DMatrix(new float[nparam][nparam]);
-		Float2DMatrix alpha1 = new Float2DMatrix(new float[nparam][nparam]);
-		Float2DMatrix erraxes0 = new Float2DMatrix(new float[nparam][nparam]);
-		Float2DMatrix erraxes1 = new Float2DMatrix(new float[nparam][nparam]);
-		float[] fitted0 = new float[ndata];
-		float[] fitted1 = new float[ndata];
-		float[] residuals0 = new float[ndata];
-		float[] residuals1 = new float[ndata];
+		final float param0_ref[] = { 0, 1000, 2};
+		final float param1_ref[] = { 0, 1000, 0.5f};
+		final float chisq_diff[] = { 0 };
+		final int model[] = { -1 };
 		// create two models to compare
-		DecayModelSelParamValuesAndFit paramsandfits[] = { 
-				new DecayModelSelParamValuesAndFit(FitFunc.GCI_MULTIEXP_TAU, param0, paramfree0, restrain, fitted0, 
-						residuals0, chisq_target, chisq_delta, chisq_percent, chisquare[0], covar0, alpha0, erraxes0),
-				new DecayModelSelParamValuesAndFit(FitFunc.GCI_MULTIEXP_LAMBDA, param1, paramfree1, restrain, fitted1, 
-						residuals1, chisq_target, chisq_delta, chisq_percent, chisquare[0], covar1, alpha1, erraxes1)
+		DecayModel paramsandfits[] = { 
+				new DecayModel(FitFunc.GCI_MULTIEXP_TAU,    param0, paramfree,
+						restrain, fit_end + 1, chisq_target, chisq_delta, chisq_percent),
+				new DecayModel(FitFunc.GCI_MULTIEXP_LAMBDA, param1, paramfree,
+						restrain, fit_end + 1, chisq_target, chisq_delta, chisq_percent)
 		};
-		int ret = SLIMCurve.GCI_EcfModelSelectionEngine(xinc, y, fit_start, fit_end, instr, noise, sig, paramsandfits, chisq_diff, model);
-		
+		int ret = SLIMCurve.GCI_EcfModelSelectionEngine(xinc, y, fit_start, fit_end, instr, noise, sig,
+				paramsandfits, chisq_diff, model);
 		assertEquals("selection failed", ret, 0);
 		compareWithLMA(xinc, y, fit_start, fit_end, instr, 
-				noise, sig, param, paramfree, restrain, FitFunc.GCI_MULTIEXP_TAU, fitted, 
+				noise, sig, param0_ref, paramfree, restrain, FitFunc.GCI_MULTIEXP_TAU, fitted, 
 				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
-				chisq_percent, DEFAULT_RET, null, covar0, alpha0, erraxes0, fitted0, residuals0, null);
+				chisq_percent, DEFAULT_RET, paramsandfits[0].getParams(),
+				paramsandfits[0].getCovar(), paramsandfits[0].getAlpha(), paramsandfits[0].getErraxes(),
+				paramsandfits[0].getFitted(), paramsandfits[0].getResiduals(),
+				new float[] { paramsandfits[0].getChisq() * (fit_end - fit_start - 3) });
+		compareWithLMA(xinc, y, fit_start, fit_end, instr, 
+				noise, sig, param1_ref, paramfree, restrain, FitFunc.GCI_MULTIEXP_LAMBDA, fitted, 
+				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
+				chisq_percent, DEFAULT_RET, paramsandfits[1].getParams(),
+				paramsandfits[1].getCovar(), paramsandfits[1].getAlpha(), paramsandfits[1].getErraxes(),
+				paramsandfits[1].getFitted(), paramsandfits[1].getResiduals(),
+				new float[] { paramsandfits[1].getChisq() * (fit_end - fit_start - 3) });
 		assertEqualsScaled("chisq_diff incorrect", 97.53906, chisq_diff[0], tolerance);
 		assertEquals("model incorrect", 2, model[0]);
 	}
 	
+	/** Tests builtin {@link FitFunc}s */
 	@Test
-	/** Tests {@link FitFunc#fit} */
 	public void testBuiltinFitFunc() {
 		// This test compares the behavior of GCI_MULTIEXP_LAMBDA
 		// in java and c
@@ -417,7 +414,7 @@ public class SLIMCurveJavaTest {
 				expectedDy_dparam[j] = ex = (float) Math.exp(-param[j + 1] * x);
 				ex *= param[j];
 				expectedY += ex;
-				expectedDy_dparam[j+1] = -ex * x;
+				expectedDy_dparam[j + 1] = -ex * x;
 			}
 			
 			lambda.fit(x, param, y, dy_dparam);
@@ -428,6 +425,46 @@ public class SLIMCurveJavaTest {
 			y[0] = 0;
 			expectedY = 0;
 		}
+	}
+	// TODO: get rid of KEEP_ALLOC
+	// TODO: delete unwanted comments
+	// TODO: optimize callback to avoid allocating arrays in each single call
+	/** Tests {@link FitFunc} callback */
+	@Test
+	public void testCustomFitFunc() {
+		// This test guarantees java FitFuncs behave the same as C FitFuncs
+		// outputs for reference
+		final float param1_ref[] = { 0, 1000, 0.5f};
+		final float fitted_ref[] = new float[ndata];
+		final float residuals_ref[] = new float[ndata];
+		final float chisquare_ref[] = {0}; 
+		final Float2DMatrix covar_ref = new Float2DMatrix(new float[nparam][nparam]);
+		final Float2DMatrix alpha_ref = new Float2DMatrix(new float[nparam][nparam]);
+		final Float2DMatrix erraxes_ref = new Float2DMatrix(new float[nparam][nparam]);
+		
+		// copied from native code
+		FitFunc customeLambda = new FitFunc() {
+			public void fit(float x, float param[], float y[], float dy_dparam[]) {
+				float ex;
+				y[0] = 0;
+				for (int i = 1; i < nparam - 1; i += 2) {
+					dy_dparam[i] = ex = (float) Math.exp(-param[i + 1] * x);
+					ex *= param[i];
+					y[0] += ex;
+					dy_dparam[i + 1] = -ex * x;
+				}
+			}
+		};
+		
+		int ret = SLIMCurve.GCI_marquardt_fitting_engine(xinc, y, fit_start, fit_end, instr, 
+				noise, sig, param1, paramfree, restrain, customeLambda, fitted, 
+				residuals, chisquare, covar, alpha, erraxes, chisq_target, chisq_delta, 
+				chisq_percent);
+		compareWithLMA(xinc, y, fit_start, fit_end, instr, 
+				noise, sig, param1_ref, paramfree, restrain, FitFunc.GCI_MULTIEXP_LAMBDA, fitted_ref, 
+				residuals_ref, chisquare_ref, covar_ref, alpha_ref, erraxes_ref, chisq_target, chisq_delta, 
+				chisq_percent,
+				ret, param1, covar, alpha, erraxes, fitted, residuals, chisquare);
 	}
 	
 	/** Tests {@link Float2DMatrix}.  */

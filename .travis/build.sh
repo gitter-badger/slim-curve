@@ -51,5 +51,7 @@ cd ..
 mvn package
 
 ls -l ./target/
+ls -l ./target/natives/
+ls -l ./target/natives/*_64/
 
 # TODO: Maven deploy artifacts
