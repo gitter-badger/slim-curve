@@ -399,7 +399,7 @@ public class SLIMCurveJavaTest {
 		float[] expectedDy_dparam = new float[7];
 		float expectedY = 0;
 		float ex;
-		float[] y = new float[1];
+		float y = 0;
 		for (int i = 0; i < TEST_SIZE; i++) {
 			// must be odd
 			int nparam = rng.nextInt(4) * 2 + 1;
@@ -417,18 +417,16 @@ public class SLIMCurveJavaTest {
 				expectedDy_dparam[j + 1] = -ex * x;
 			}
 			
-			lambda.fit(x, param, y, dy_dparam);
-			assertEqualsScaled("y incorrect", expectedY, y[0], tolerance);
+			y = lambda.fit(x, param, dy_dparam);
+			assertEqualsScaled("y incorrect", expectedY, y, tolerance);
 			assertArrayEqualsScaled("expectedDy_dparam incorrect",
 					expectedDy_dparam, dy_dparam, tolerance);
 
-			y[0] = 0;
+			y = 0;
 			expectedY = 0;
 		}
 	}
-	// TODO: get rid of KEEP_ALLOC
-	// TODO: delete unwanted comments
-	// TODO: optimize callback to avoid allocating arrays in each single call
+	
 	/** Tests {@link FitFunc} callback */
 	@Test
 	public void testCustomFitFunc() {
@@ -444,15 +442,16 @@ public class SLIMCurveJavaTest {
 		
 		// copied from native code
 		FitFunc customeLambda = new FitFunc() {
-			public void fit(float x, float param[], float y[], float dy_dparam[]) {
+			public float fit(final float x, final float param[], float dy_dparam[]) {
 				float ex;
-				y[0] = 0;
+				float y = 0;
 				for (int i = 1; i < nparam - 1; i += 2) {
 					dy_dparam[i] = ex = (float) Math.exp(-param[i + 1] * x);
 					ex *= param[i];
-					y[0] += ex;
+					y += ex;
 					dy_dparam[i + 1] = -ex * x;
 				}
+				return y;
 			}
 		};
 		

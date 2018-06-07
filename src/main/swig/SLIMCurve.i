@@ -25,12 +25,11 @@ ENUMMAP(FITTYPEENUM, fit_type, FitType);
 %rename(RestrainType) restrain_type;
 
 // input 1d array (with length) maps
-ARRMAP(INTARRIN_LEN, 1, 1, int, Int, JNI_ABORT, false, 0)
-ARRMAP(FLTARRIN_LEN, 1, 1, float, Float, JNI_ABORT, false, 0)
-ARRMAP(FLTPTRIN_LEN, 0, 1, float, Float, JNI_ABORT, false, 0)
-ARRMAP(FLTARRIN_NUL, 1, 1, float, Float, JNI_ABORT, true, 0)
-ARRMAP(FLTPTRIN_KEEP, 0, 0, float, Float, JNI_ABORT, true, 1)
-ARRMAP(DBLARRIN_NUL, 1, 1, double, Double, JNI_ABORT, true, 0)
+ARRMAP(INTARRIN_LEN, 1, 1, int, Int, JNI_ABORT, false)
+ARRMAP(FLTARRIN_LEN, 1, 1, float, Float, JNI_ABORT, false)
+ARRMAP(FLTPTRIN_LEN, 0, 1, float, Float, JNI_ABORT, false)
+ARRMAP(FLTARRIN_NUL, 1, 1, float, Float, JNI_ABORT, true)
+ARRMAP(DBLARRIN_NUL, 1, 1, double, Double, JNI_ABORT, true)
 
 // input 2d array maps
 MATMAP(F2D_in, float, Float, F, Float2DMatrix)
@@ -59,9 +58,6 @@ MATMAP(I2D_in, int, Int, I, Int2DMatrix)
 }
 %apply FLTARRIN_NUL {
 	(float instr[], int ninstr)
-}
-%apply FLTPTRIN_KEEP {
-	float *fitted_buf, float *residuals_buf
 }
 %apply DBLARRIN_NUL {
 	(double instr[], int n_instr)
